@@ -121,15 +121,15 @@ public class ConexionDB {
         Statement s;
         datos = null;
         s = con.createStatement();
-        rs = s.executeQuery("SELECT ID, NOMBRE, APES, EMAIL, TELEFONO FROM USUARIOS"
+        rs = s.executeQuery("SELECT ID, NOMBRE, APES, EMAIL, TELEFONO, FEC_NAC FROM USUARIOS"
                 + " WHERE ID = (SELECT ID_US FROM ANUNCIOS WHERE ID = " + idAnunc + ")");
         if (rs.next()) {
-            datos = new String[4];
+            datos = new String[5];
             datos[0] = Integer.toString(rs.getInt(1));
             datos[1] = rs.getString(2).concat(" ").concat(rs.getString(3));
             datos[2] = rs.getString(4);
             datos[3] = Integer.toString(rs.getInt(5));
-
+            datos[4] = rs.getString(6);
         }
         rs.close();
         return datos;
@@ -485,16 +485,14 @@ public class ConexionDB {
                                 + " AND "
                                 + "ID_ANUNCIO = " + Integer.parseInt(cad);
                         rs = s.executeQuery(sql);
-                        if (rs.next()) {
-                            exito = false;
-                        } else {
-                            exito = true;
-                        }
+                        exito = !rs.next();
                     }
                 }
             }
         }
-        rs.close();
+        if (rs != null) {
+            rs.close();
+        }
         return exito;
     }
 }

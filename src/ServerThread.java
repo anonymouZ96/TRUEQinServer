@@ -425,7 +425,7 @@ public class ServerThread extends Thread {
             if (datos[0].toUpperCase().matches("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$") &&
                     datos[0].length() <= 60) {
                 resultados[1] = true;
-                if (this.conexion.check(this.idUs, datos[0], (byte) 1)) {
+                if (this.conexion.check(this.idUs, datos[0], (byte) 1)) {   //Email no está registrado por otro usuario
                     resultados[2] = true;
                     this.conexion.editar(datos[0], this.idUs, (byte) 5);
                 }
@@ -437,7 +437,7 @@ public class ServerThread extends Thread {
         if (!datos[1].isEmpty()) {       //Teléfono
             if (datos[1].matches("\\d{9}")) {
                 resultados[3] = true;
-                this.conexion.editar(datos[0], this.idUs, (byte) 6);
+                this.conexion.editar(datos[1], this.idUs, (byte) 6);
             }
         } else {
             resultados[3] = true;
@@ -451,7 +451,7 @@ public class ServerThread extends Thread {
                     resultados[5] = true;
                     if (this.conexion.check(this.idUs, datos[4], (byte) 2)) {
                         resultados[6] = true;
-                        this.conexion.editar(datos[0], this.idUs, (byte) 7);
+                        this.conexion.editar(datos[2], this.idUs, (byte) 7);
                     }
                 }
             }
@@ -461,6 +461,8 @@ public class ServerThread extends Thread {
             resultados[6] = true;
         }
         resultados[0] = true;
+        this.oos.writeObject(resultados);
+
     }
 
     private void editarAnuncio() throws IOException, SQLException, ClassNotFoundException {
