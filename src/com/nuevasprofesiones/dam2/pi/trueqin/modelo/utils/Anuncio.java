@@ -15,17 +15,12 @@ public class Anuncio implements Serializable {
         this.puntos = puntos;
     }
 
-    public Anuncio(String titulo, String ubicacion, String puntos) {
-        this.titulo = titulo;
-        this.ubicacion = ubicacion;
-        this.puntos = puntos;
-    }
-
-    public Anuncio(String titulo, String descrip, String ubicacion, String puntos) {
+    public Anuncio(String titulo, String descrip, String ubicacion, String puntos, byte categoria) {
         this.titulo = titulo;
         this.descrip = descrip;
         this.ubicacion = ubicacion;
         this.puntos = puntos;
+        this.categoria = categoria;
     }
 
     public Anuncio(String titulo, String descrip, String ubicacion, int id, String puntos, byte categoria) {
@@ -42,24 +37,12 @@ public class Anuncio implements Serializable {
         return titulo;
     }
 
-    public void setTitulo(String titulo) {
-        this.titulo = titulo;
-    }
-
     public String getDescrip() {
         return descrip;
     }
 
-    public void setDescrip(String descrip) {
-        this.descrip = descrip;
-    }
-
     public String getUbicacion() {
         return ubicacion;
-    }
-
-    public void setUbicacion(String ubicacion) {
-        this.ubicacion = ubicacion;
     }
 
     public int getIdUs() {
@@ -74,16 +57,8 @@ public class Anuncio implements Serializable {
         return puntos;
     }
 
-    public void setPuntos(String puntos) {
-        this.puntos = puntos;
-    }
-
     public byte getCategoria() {
         return categoria;
-    }
-
-    public void setCategoria(byte categoria) {
-        this.categoria = categoria;
     }
 
     public int getId() {
@@ -92,6 +67,6 @@ public class Anuncio implements Serializable {
 
     @Override
     public String toString() {
-        return this.titulo.concat("\n").concat("Ubicación: ").concat(this.ubicacion).concat("\nPuntos necesarios: ").concat(this.puntos);
+        return this.titulo.concat("\n").concat("\nPuntos necesarios: ").concat(this.puntos);
     }
 }

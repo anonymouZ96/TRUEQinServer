@@ -300,9 +300,9 @@ public class ConexionDB {
         Statement s;
         anuncio = null;
         s = con.createStatement();
-        rs = s.executeQuery("SELECT TITULO, DESCRIPCION, UBICACION, PUNTOS FROM ANUNCIOS WHERE ID = " + idAnunc);
+        rs = s.executeQuery("SELECT TITULO, DESCRIPCION, UBICACION, PUNTOS, CATEGORIA FROM ANUNCIOS WHERE ID = " + idAnunc);
         if (rs.next()) {
-            anuncio = new Anuncio(rs.getString(1), rs.getString(2), rs.getString(3), Short.toString(rs.getShort(4)));
+            anuncio = new Anuncio(rs.getString(1), rs.getString(2), rs.getString(3), Short.toString(rs.getShort(4)), rs.getByte(5));
         }
         rs.close();
         return anuncio;
