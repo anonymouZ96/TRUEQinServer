@@ -76,7 +76,11 @@ public class ServerThread extends Thread {
                                                                             this.editarAnuncio();
                                                                         } else {
                                                                             if (idActivity == 14) {
-                                                                                this.cierraConexion();
+                                                                                this.obtienePuntos();
+                                                                            } else {
+                                                                                if (idActivity == 15) {
+                                                                                    this.cierraConexion();
+                                                                                }
                                                                             }
                                                                         }
                                                                     }
@@ -262,6 +266,10 @@ public class ServerThread extends Thread {
         this.dos.flush();
         this.oos.writeObject(resRegistro);
         this.oos.flush();
+    }
+
+    private void obtienePuntos() throws SQLException, IOException {
+        this.dos.writeShort(this.conexion.getPuntos(this.idUs));
     }
 
     private void listaAnuncios(byte op) throws IOException, SQLException, ClassNotFoundException {

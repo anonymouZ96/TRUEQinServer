@@ -77,7 +77,7 @@ public class ConexionDB {
                 + "WHERE EMAIL = '" + email + "')");
         if (rs.next()) {
             idUs = rs.getInt(1);
-            setPuntosActuales(idUs);
+            //this.setPuntosActuales(idUs);
         }
         return idUs;
     }
@@ -87,7 +87,7 @@ public class ConexionDB {
         ResultSet rs;
         Statement s;
         int idUs;
-        con.prepareStatement("INSERT INTO USUARIOS"
+        this.con.prepareStatement("INSERT INTO USUARIOS"
                 + " (NOMBRE, APES, FEC_NAC, PUNTOS, EMAIL, TELEFONO)"
                 + " VALUES "
                 + "('"
@@ -98,7 +98,7 @@ public class ConexionDB {
                 + user.getEmail() + "',"
                 + Integer.parseInt(user.getTelefono())
                 + ")").execute();
-        s = con.createStatement();
+        s = this.con.createStatement();
         rs = s.executeQuery("SELECT MAX(ID) FROM USUARIOS");
         idUs = -1;
         if (rs.next()) {
@@ -152,40 +152,40 @@ public class ConexionDB {
         return datosUsuarios;
     }
 
-    public boolean setPuntosActuales(int idUs) throws SQLException {
-        Statement s;
-        ResultSet rs;
-        int puntosPos, puntosNeg;
-        boolean exito;
-        exito = false;
-        s = con.createStatement();
-        rs = s.executeQuery("SELECT SUM(PUNTOS) FROM ANUNCIOS"
-                + " WHERE ID IN (SELECT ID_ANUNCIO FROM SOLICITUDES"
-                + " WHERE ID_US = " + idUs
-                + " AND"
-                + " ESTADO = " + 1 + ")");
-        if (rs.next()) {
-            puntosNeg = rs.getInt(1);
-            rs = s.executeQuery("SELECT SUM(PUNTOS) FROM ANUNCIOS"
-                    + " WHERE ID_US = " + idUs
-                    + " AND "
-                    + "ID IN (SELECT ID_ANUNCIO FROM SOLICITUDES"
-                    + " WHERE ESTADO = " + 1 + ")");
-            if (rs.next()) {
-                puntosPos = rs.getInt(1);
-                if (puntosNeg == 0) {
-                    con.prepareStatement("UPDATE USUARIOS"
-                            + " SET PUNTOS = " + (300 + puntosPos)).execute();
-                    exito = true;
-                } else {
-                    con.prepareStatement("UPDATE USUARIOS"
-                            + " SET PUNTOS = " + (puntosPos - puntosNeg)).execute();
-                    exito = true;
-                }
-            }
-        }
-        return exito;
-    }
+//    public boolean setPuntosActuales(int idUs) throws SQLException {
+//        Statement s;
+//        ResultSet rs;
+//        int puntosPos, puntosNeg;
+//        boolean exito;
+//        exito = false;
+//        s = con.createStatement();
+//        rs = s.executeQuery("SELECT SUM(PUNTOS) FROM ANUNCIOS"
+//                + " WHERE ID IN (SELECT ID_ANUNCIO FROM SOLICITUDES"
+//                + " WHERE ID_US = " + idUs
+//                + " AND"
+//                + " ESTADO = " + 1 + ")");
+//        if (rs.next()) {
+//            puntosNeg = rs.getInt(1);
+//            rs = s.executeQuery("SELECT SUM(PUNTOS) FROM ANUNCIOS"
+//                    + " WHERE ID_US = " + idUs
+//                    + " AND "
+//                    + "ID IN (SELECT ID_ANUNCIO FROM SOLICITUDES"
+//                    + " WHERE ESTADO = " + 1 + ")");
+//            if (rs.next()) {
+//                puntosPos = rs.getInt(1);
+//                if (puntosNeg == 0) {
+//                    con.prepareStatement("UPDATE USUARIOS"
+//                            + " SET PUNTOS = " + (300 + puntosPos)).execute();
+//                    exito = true;
+//                } else {
+//                    con.prepareStatement("UPDATE USUARIOS"
+//                            + " SET PUNTOS = " + (puntosPos - puntosNeg)).execute();
+//                    exito = true;
+//                }
+//            }
+//        }
+//        return exito;
+//    }
 
     public int getPuntos(int idUs) throws SQLException {
         int puntos;
@@ -367,6 +367,19 @@ public class ConexionDB {
         return vecTrueques;
     }
 
+    private short getCosteAnuncio(int idAnunc) throws SQLException {
+        ResultSet rs;
+        Statement s;
+        short puntos;
+        puntos = -1;
+        s = con.createStatement();
+        rs = s.executeQuery("SELECT PUNTOS FROM ANUNCIOS WHERE ID = " + idAnunc);
+        if (rs.next()) {
+            puntos = rs.getShort(1);
+        }
+        return puntos;
+    }
+
     public boolean confirmarTrueque(int idAnunc, int idUS, byte opcion) throws SQLException {
         boolean exito;
         con.prepareStatement("UPDATE SOLICITUDES"
@@ -374,6 +387,13 @@ public class ConexionDB {
                 + " WHERE ID_US = " + idUS
                 + " AND "
                 + "ID_ANUNCIO = " + idAnunc).execute();
+        if (opcion == 1) {
+            //Comprador
+            con.prepareStatement("UPDATE USUARIOS SET PUNTOS = " + (getPuntos(idUS) - getCosteAnuncio(idAnunc)) + " WHERE ID = " + idUS).execute();
+
+            //Vendedor
+            con.prepareStatement("UPDATE USUARIOS SET PUNTOS = " + (getPuntos(Short.parseShort(obtieneAutorAnuncio(idAnunc)[0])) + getCosteAnuncio(idAnunc)) + " WHERE ID = " + Short.parseShort(obtieneAutorAnuncio(idAnunc)[0])).execute();
+        }
         exito = true;
         return exito;
     }
