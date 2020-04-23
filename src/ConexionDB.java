@@ -311,12 +311,30 @@ public class ConexionDB {
     public boolean solicitar(int idUs, int idAnunc) throws SQLException {
         boolean exito;
         exito = false;
-        con.prepareStatement("INSERT INTO SOLICITUDES"
+        this.con.prepareStatement("INSERT INTO SOLICITUDES"
                 + " (ID_ANUNCIO, ID_US, ESTADO)"
                 + " VALUES "
                 + "("
                 + idAnunc + ","
                 + idUs + ", 3)").execute();
+        this.con.prepareStatement("UPDATE USUARIOS " +
+                "SET PUNTOS_BLOQUEADOS = PUNTOS_BLOQUEADOS + " + getCosteAnuncio(idAnunc) +
+                ", PUNTOS = PUNTOS - " + getCosteAnuncio(idAnunc) +
+                "  WHERE ID = " + idUs).execute();
+        exito = true;
+        return exito;
+    }
+
+    public boolean cancelar(int idUs, int idAnunc) throws SQLException {
+        boolean exito;
+        exito = false;
+        this.con.prepareStatement("UPDATE USUARIOS " +
+                "SET PUNTOS_BLOQUEADOS = PUNTOS_BLOQUEADOS - " + getCosteAnuncio(idAnunc) +
+                ", PUNTOS = PUNTOS + " + getCosteAnuncio(idAnunc) +
+                "  WHERE ID = " + idUs).execute();
+        this.con.prepareStatement("DELETE FROM SOLICITUDES " +
+                "WHERE ID_ANUNCIO = " + idAnunc +
+                " AND ID_US = " + idUs).execute();
         exito = true;
         return exito;
     }
@@ -329,18 +347,18 @@ public class ConexionDB {
         short i;
         s = con.createStatement();
         if (op) {
-            rs = s.executeQuery("SELECT ID, TITULO, ESTADO FROM ANUNCIOS, SOLICITUDES "
-                    + "WHERE ID = ID_ANUNCIO "
+            rs = s.executeQuery("SELECT ANUNCIOS.ID, TITULO, ESTADO FROM ANUNCIOS, SOLICITUDES "
+                    + "WHERE ANUNCIOS.ID = ID_ANUNCIO "
                     + "AND "
-                    + "ID IN (SELECT ID_ANUNCIO FROM SOLICITUDES "
+                    + "ANUNCIOS.ID IN (SELECT ID_ANUNCIO FROM SOLICITUDES "
                     + "WHERE ID_US = " + idUs + ")");
         } else {
-            rs = s.executeQuery("SELECT ID, TITULO, ESTADO, SOLICITUDES.ID_US FROM ANUNCIOS, SOLICITUDES "
-                    + "WHERE ID = ID_ANUNCIO "
+            rs = s.executeQuery("SELECT ANUNCIOS.ID, TITULO, ESTADO, SOLICITUDES.ID_US FROM ANUNCIOS, SOLICITUDES "
+                    + "WHERE ANUNCIOS.ID = ID_ANUNCIO "
                     + "AND "
                     + "ANUNCIOS.ID_US = " + idUs
                     + " AND "
-                    + "ID IN (SELECT ID_ANUNCIO FROM SOLICITUDES)");
+                    + "ANUNCIOS.ID IN (SELECT ID_ANUNCIO FROM SOLICITUDES)");
         }
         rs.last();
         vecTrueques = new Trueque[rs.getRow()];
@@ -380,19 +398,28 @@ public class ConexionDB {
         return puntos;
     }
 
-    public boolean confirmarTrueque(int idAnunc, int idUS, byte opcion) throws SQLException {
+    public boolean confirmarTrueque(int idAnunc, int idUs, byte opcion) throws SQLException {
         boolean exito;
         con.prepareStatement("UPDATE SOLICITUDES"
                 + " SET ESTADO = " + opcion
-                + " WHERE ID_US = " + idUS
+                + " WHERE ID_US = " + idUs
                 + " AND "
                 + "ID_ANUNCIO = " + idAnunc).execute();
         if (opcion == 1) {
             //Comprador
-            con.prepareStatement("UPDATE USUARIOS SET PUNTOS = " + (getPuntos(idUS) - getCosteAnuncio(idAnunc)) + " WHERE ID = " + idUS).execute();
+            con.prepareStatement("UPDATE USUARIOS SET PUNTOS_BLOQUEADOS = PUNTOS_BLOQUEADOS - " + getCosteAnuncio(idAnunc) +
+                    " WHERE ID = " + idUs).execute();
 
             //Vendedor
             con.prepareStatement("UPDATE USUARIOS SET PUNTOS = " + (getPuntos(Short.parseShort(obtieneAutorAnuncio(idAnunc)[0])) + getCosteAnuncio(idAnunc)) + " WHERE ID = " + Short.parseShort(obtieneAutorAnuncio(idAnunc)[0])).execute();
+        } else {
+            if (opcion == 2) {
+                //Comprador
+                this.con.prepareStatement("UPDATE USUARIOS " +
+                        "SET PUNTOS_BLOQUEADOS = PUNTOS_BLOQUEADOS -   " + getCosteAnuncio(idAnunc) +
+                        ", PUNTOS = PUNTOS + " + getCosteAnuncio(idAnunc) +
+                        "  WHERE ID = " + idUs).execute();
+            }
         }
         exito = true;
         return exito;
@@ -436,25 +463,31 @@ public class ConexionDB {
                 } else {
                     if (op == 4) {
                         sql = "UPDATE ANUNCIOS"
-                                + " SET PUNTOS = " + Short.parseShort(nuevo) + " "
-                                + "WHERE ID = " + id;
+                                + " SET PUNTOS = " + Short.parseShort(nuevo)
+                                + " WHERE ID = " + id;
                     } else {
                         if (op == 5) {
-                            sql = "UPDATE USUARIOS"
-                                    + " SET EMAIL = '" + nuevo + "' "
-                                    + "WHERE ID = " + id;
+                            sql = "UPDATE ANUNCIOS"
+                                    + " SET CATEGORIA = " + (Byte.parseByte(nuevo) + 2)
+                                    + " WHERE ID = " + id;
                         } else {
                             if (op == 6) {
                                 sql = "UPDATE USUARIOS"
-                                        + " SET TELEFONO = " + Integer.parseInt(nuevo) + " "
+                                        + " SET EMAIL = '" + nuevo + "' "
                                         + "WHERE ID = " + id;
                             } else {
                                 if (op == 7) {
-                                    String llave;
-                                    llave = "np1920";
-                                    sql = "UPDATE CONTRAS"
-                                            + " SET VALOR = AES_ENCRYPT('" + nuevo + "','" + llave + "')"
-                                            + " WHERE ID_US = " + id;
+                                    sql = "UPDATE USUARIOS"
+                                            + " SET TELEFONO = " + Integer.parseInt(nuevo) + " "
+                                            + "WHERE ID = " + id;
+                                } else {
+                                    if (op == 8) {
+                                        String llave;
+                                        llave = "np1920";
+                                        sql = "UPDATE CONTRAS"
+                                                + " SET VALOR = AES_ENCRYPT('" + nuevo + "','" + llave + "')"
+                                                + " WHERE ID_US = " + id;
+                                    }
                                 }
                             }
                         }
@@ -501,11 +534,16 @@ public class ConexionDB {
                     }
                 } else {
                     if (op == 4) {       //Ya solicitado
-                        sql = "SELECT * FROM SOLICITUDES WHERE ID_US = " + idUs
+                        sql = "SELECT ESTADO FROM SOLICITUDES WHERE ID_US = " + idUs
                                 + " AND "
                                 + "ID_ANUNCIO = " + Integer.parseInt(cad);
                         rs = s.executeQuery(sql);
-                        exito = !rs.next();
+                        if (rs.next()) {
+                            exito = rs.getByte(1) != 3;
+                        } else {
+                            exito = true;
+                        }
+                        //exito = !rs.next();
                     }
                 }
             }

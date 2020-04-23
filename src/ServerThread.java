@@ -346,6 +346,11 @@ public class ServerThread extends Thread {
                         if (op == 5) {
                             this.dos.writeBoolean(this.conexion.solicitar(this.dis.readInt(), this.dis.readInt()));
                             this.dos.flush();
+                        } else {
+                            if (op == 6) {
+                                this.dos.writeBoolean(this.conexion.cancelar(this.idUs, this.dis.readInt()));
+                                this.dos.flush();
+                            }
                         }
                     }
                 }
@@ -435,7 +440,7 @@ public class ServerThread extends Thread {
                 resultados[1] = true;
                 if (this.conexion.check(this.idUs, datos[0], (byte) 1)) {   //Email no está registrado por otro usuario
                     resultados[2] = true;
-                    this.conexion.editar(datos[0], this.idUs, (byte) 5);
+                    this.conexion.editar(datos[0], this.idUs, (byte) 6);
                 }
             }
         } else {
@@ -445,7 +450,7 @@ public class ServerThread extends Thread {
         if (!datos[1].isEmpty()) {       //Teléfono
             if (datos[1].matches("\\d{9}")) {
                 resultados[3] = true;
-                this.conexion.editar(datos[1], this.idUs, (byte) 6);
+                this.conexion.editar(datos[1], this.idUs, (byte) 7);
             }
         } else {
             resultados[3] = true;
@@ -459,7 +464,7 @@ public class ServerThread extends Thread {
                     resultados[5] = true;
                     if (this.conexion.check(this.idUs, datos[4], (byte) 2)) {
                         resultados[6] = true;
-                        this.conexion.editar(datos[2], this.idUs, (byte) 7);
+                        this.conexion.editar(datos[2], this.idUs, (byte) 8);
                     }
                 }
             }
@@ -494,7 +499,8 @@ public class ServerThread extends Thread {
                         !valores[0].isEmpty() &&
                         valores[0].matches("\\d{1,4}") &&
                         Short.parseShort(valores[0]) <= 9999 &&
-                        Short.parseShort(valores[0]) >= 1)) {
+                        Short.parseShort(valores[0]) >= 1) ||
+                Byte.parseByte(valores[2]) == 5) {      //Categoría
             resultados[1] = true;
             this.conexion.editar(valores[0], Integer.parseInt(valores[1]), Byte.parseByte(valores[2]));
         }
