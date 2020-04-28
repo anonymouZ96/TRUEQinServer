@@ -31,6 +31,10 @@ public class Usuario implements Serializable {
         return this.fecha;
     }
 
+    public void setFecha(String fecha) {
+        this.fecha = fecha;
+    }
+
     public String getContras1() {
         return this.contras1;
     }

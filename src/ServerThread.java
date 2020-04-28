@@ -31,57 +31,48 @@ public class ServerThread extends Thread {
             this.ois = new ObjectInputStream(this.cliente.getInputStream());
             this.dos = new DataOutputStream(this.cliente.getOutputStream());
             this.dis = new DataInputStream(this.cliente.getInputStream());
-//            while (this.cliente.isConnected()) {
             while (!this.cliente.isClosed()) {
                 try {
                     if (this.dis.available() > 0) {
                         idActivity = this.dis.readByte();
                         if (idActivity == 1) {
-
+                            this.iniciaSesion();
                         } else {
                             if (idActivity == 2) {
-                                this.iniciaSesion();
+                                this.registro();
                             } else {
                                 if (idActivity == 3) {
-                                    this.registro();
+                                    this.listaAnuncios(this.dis.readByte());
                                 } else {
                                     if (idActivity == 4) {
-
+                                        this.anuncio(this.dis.readByte());
                                     } else {
                                         if (idActivity == 5) {
-                                            this.listaAnuncios(this.dis.readByte());
+                                            this.categorias();
                                         } else {
                                             if (idActivity == 6) {
-                                                this.anuncio(this.dis.readByte());
+                                                this.trueques(this.dis.readByte());
                                             } else {
                                                 if (idActivity == 7) {
-                                                    this.categorias();
+                                                    this.getMisDatos();
                                                 } else {
                                                     if (idActivity == 8) {
-                                                        this.trueques(this.dis.readByte());
+                                                        this.nuevoAnuncio();
                                                     } else {
                                                         if (idActivity == 9) {
-                                                            this.getMisDatos();
+                                                            this.check(this.dis.readByte());
                                                         } else {
                                                             if (idActivity == 10) {
-                                                                this.nuevoAnuncio();
+                                                                this.editarMisDatos();
                                                             } else {
                                                                 if (idActivity == 11) {
-                                                                    this.check(this.dis.readByte());
+                                                                    this.editarAnuncio();
                                                                 } else {
                                                                     if (idActivity == 12) {
-                                                                        this.editarMisDatos();
+                                                                        this.obtienePuntos();
                                                                     } else {
                                                                         if (idActivity == 13) {
-                                                                            this.editarAnuncio();
-                                                                        } else {
-                                                                            if (idActivity == 14) {
-                                                                                this.obtienePuntos();
-                                                                            } else {
-                                                                                if (idActivity == 15) {
-                                                                                    this.cierraConexion();
-                                                                                }
-                                                                            }
+                                                                            this.cierraConexion();
                                                                         }
                                                                     }
                                                                 }
@@ -247,11 +238,15 @@ public class ServerThread extends Thread {
             resRegistro[i] = true;
         }
         i++;    //Fecha nacimiento
-        if (usuario.getFecha().length() >= 8 &&
-                usuario.getFecha().matches("[\\d]{4}/[\\d]{1,2}/[\\d]{1,2}") &&
-                usuario.getFecha().length() <= 10 &&
-                compruebaFecha(usuario.getFecha())) {
-            resRegistro[i] = true;
+        if (usuario.getFecha().length() >= 8) {
+            String fecha;
+            fecha = usuario.getFecha();
+            usuario.setFecha(fecha.substring(fecha.lastIndexOf("/") + 1).concat("/").concat(fecha.substring(fecha.indexOf("/") + 1, fecha.lastIndexOf("/"))).concat("/").concat(fecha.substring(0, fecha.indexOf("/"))));
+            if (usuario.getFecha().matches("[\\d]{4}/[\\d]{1,2}/[\\d]{1,2}") &&
+                    usuario.getFecha().length() <= 10 &&
+                    compruebaFecha(usuario.getFecha())) {
+                resRegistro[i] = true;
+            }
         }
         i = 1;
         while (i <= resRegistro.length - 1 && resRegistro[i]) {
