@@ -37,7 +37,7 @@ public class ConexionDB {
     private void confConexion() throws FileNotFoundException, IOException {
         Properties prop;
         prop = new Properties();
-        prop.load(new FileReader("DB/properties.txt".replace('/', File.separatorChar)));
+        prop.load(new FileReader("DB/conexion.properties".replace('/', File.separatorChar)));
         this.host = prop.getProperty("HOST");
         this.port = prop.getProperty("PORT");
         this.user = prop.getProperty("USER");

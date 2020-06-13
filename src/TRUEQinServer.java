@@ -6,20 +6,24 @@ import java.util.TreeMap;
 
 public class TRUEQinServer {
 
+    protected static int numClientes;
     private static TreeMap<String, Byte> mapIPsBloqueadas;
 
     public static void main(String arg[]) {
         ConexionDB conexion;
+        numClientes = 0;
         try {
             mapIPsBloqueadas = new TreeMap<>();
             ServerSocket server = new ServerSocket(6000);
             System.out.println("Servidor encendido y escuchando en el puerto 6000");
             System.out.println("Servidor a la espera de clientes");
             while (true) {
+                System.out.println("Clientes conectados: " + numClientes);
                 Socket cliente = server.accept();
                 conexion = new ConexionDB();
                 new ServerThread(cliente, conexion).start();
-                //new ServerThread(cliente).start();
+                numClientes++;
+                System.out.println("Cliente conectado (" + cliente.getInetAddress().getHostAddress() + ")");
             }
         } catch (SQLException sqle) {
             System.err.println(sqle.getMessage());

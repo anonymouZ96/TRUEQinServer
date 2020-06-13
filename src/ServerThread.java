@@ -509,6 +509,8 @@ public class ServerThread extends Thread {
         this.dis.close();
         this.ois.close();
         this.conexion.cierraConexion();
+        System.out.println("Cliente desconectado (" + this.ip + ")");
+        TRUEQinServer.numClientes--;
     }
 
 }
